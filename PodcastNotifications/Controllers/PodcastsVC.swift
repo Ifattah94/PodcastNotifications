@@ -55,7 +55,7 @@ class PodcastsVC: UIViewController {
     
 
 }
-extension PodcastsVC: UITableViewDataSource, UITableViewDelegate {
+extension PodcastsVC: UITableViewDataSource, UITableViewDelegate  {
     func tableView(_ tableView: UITableView, numberOfRowsInSection section: Int) -> Int {
         return podcasts.count
     }
