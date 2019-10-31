@@ -14,6 +14,8 @@ class LoginVC: UIViewController {
     //MARK: UI Objects
     
     
+    let scrollView = UIScrollView()
+    
     lazy var containerView: UIView = {
         let view = UIView()
         view.backgroundColor = .white
@@ -35,17 +37,19 @@ class LoginVC: UIViewController {
         myTextField.layer.cornerRadius = 5
         myTextField.layer.borderWidth = 2
         myTextField.layer.borderColor = UIColor.black.cgColor
+        myTextField.delegate = self
         myTextField.addTarget(self, action: #selector(formValidation), for: .editingChanged)
         return myTextField
     }()
     
-     var passwordTextField: UITextField = {
+     lazy var passwordTextField: UITextField = {
         let myTextField = UITextField()
         myTextField.placeholder = "Password"
         myTextField.layer.cornerRadius = 5
                myTextField.layer.borderWidth = 2
                myTextField.layer.borderColor = UIColor.black.cgColor
         myTextField.isSecureTextEntry = true
+        myTextField.delegate = self
         myTextField.addTarget(self, action: #selector(formValidation), for: .editingChanged)
        
         return myTextField
@@ -57,6 +61,7 @@ class LoginVC: UIViewController {
                button.setTitleColor(.white, for: .normal)
                button.backgroundColor = UIColor(red: 149/255, green: 204/255, blue: 244/255, alpha: 1)
                button.layer.cornerRadius = 5
+        button.showsTouchWhenHighlighted = true 
                button.addTarget(self, action: #selector(handleLogin), for: .touchUpInside)
         return button
     }()
@@ -68,10 +73,12 @@ class LoginVC: UIViewController {
     private let myEmail = "Iramfattah94@gmail.com"
     private let myPassword = "6.1rocks"
     
+     private var containetViewBottomConstraint = NSLayoutConstraint()
     
     override func viewDidLoad() {
         super.viewDidLoad()
         view.backgroundColor = .white
+        addObservers()
         setupContainerView()
         configureLogoImageView()
         configureEmailTextField()
@@ -79,6 +86,8 @@ class LoginVC: UIViewController {
         configureLoginButton()
 
     }
+    
+   
     
     
     //MARK: Objc Selector functions
@@ -103,15 +112,47 @@ class LoginVC: UIViewController {
             return
         }
         
-        
-        
-        
+        let podcastsVC = PodcastsVC()
+        podcastsVC.modalPresentationStyle = .fullScreen
+        present(podcastsVC, animated: true, completion: nil)
         
     }
+    
+    @objc func handleKeyboardHiding(sender notification: Notification) {
+           guard let infoDict = notification.userInfo else { return }
+        guard let duration = infoDict[UIResponder.keyboardAnimationDurationUserInfoKey] as? Double else { return }
+        
+      
+        containetViewBottomConstraint.constant = -(CGRect.zero.height)
+        UIView.animate(withDuration: duration) {
+            self.view.layoutIfNeeded()
+        }
+        
+       }
        
+    
+    @objc func handleKeyboardShowing(sender notification: Notification) {
+        guard let infoDict = notification.userInfo else {return}
+        guard let rectFrame = infoDict[UIResponder.keyboardFrameEndUserInfoKey] as? CGRect else {return}
+        guard let duration = infoDict[UIResponder.keyboardAnimationDurationUserInfoKey] as? Double else {return}
+       
+        containetViewBottomConstraint.constant = -(rectFrame.height)
+        UIView.animate(withDuration: duration) {
+            self.view.layoutIfNeeded()
+        }
+       
+    }
     
     
     //MARK: Private Methods
+    
+   private func addObservers() {
+    NotificationCenter.default.addObserver(self, selector: #selector(handleKeyboardShowing(sender:)), name: UIResponder.keyboardWillShowNotification, object: nil)
+    NotificationCenter.default.addObserver(self, selector: #selector(handleKeyboardHiding(sender:)), name: UIResponder.keyboardWillHideNotification, object: nil)
+    }
+    
+  
+    
     
     private func showAlert() {
         let alertController = UIAlertController(title: "Invalid Login", message: "Incorrect email and/or password", preferredStyle: .alert)
@@ -125,17 +166,21 @@ class LoginVC: UIViewController {
     //MARK: Constraint functions:
     
     
+  
+    
     private func setupContainerView() {
-        view.addSubview(containerView)
+        self.view.addSubview(containerView)
         containerView.translatesAutoresizingMaskIntoConstraints = false
         NSLayoutConstraint.activate(
-            [containerView.topAnchor.constraint(equalTo: view.topAnchor, constant: 200),
+            [containerView.topAnchor.constraint(equalTo: view.topAnchor, constant: 0),
              
              containerView.leadingAnchor.constraint(equalTo: view.leadingAnchor),
-             containerView.trailingAnchor.constraint(equalTo: view.trailingAnchor),
-             containerView.bottomAnchor.constraint(equalTo: view.bottomAnchor, constant: -10)
+             containerView.trailingAnchor.constraint(equalTo: view.trailingAnchor)
              
                 ])
+        self.containetViewBottomConstraint = containerView.bottomAnchor.constraint(equalTo: view.bottomAnchor)
+        containetViewBottomConstraint.isActive = true
+        
     }
     
     private func configureLogoImageView() {
@@ -154,17 +199,17 @@ class LoginVC: UIViewController {
         containerView.addSubview(emailTextField)
         emailTextField.translatesAutoresizingMaskIntoConstraints = false
         NSLayoutConstraint.activate(
-            [emailTextField.topAnchor.constraint(equalTo: logoImageView.bottomAnchor, constant: 16),
+            [emailTextField.topAnchor.constraint(equalTo: logoImageView.bottomAnchor, constant: 60),
              emailTextField.centerXAnchor.constraint(equalTo: containerView.centerXAnchor),
              emailTextField.widthAnchor.constraint(equalTo: containerView.widthAnchor, multiplier: 0.72),
-                emailTextField.heightAnchor.constraint(equalTo: containerView.heightAnchor, multiplier: 0.085)])
+                emailTextField.heightAnchor.constraint(equalTo: containerView.heightAnchor, multiplier: 0.070)])
     }
     
     private func configurePasswordTextField() {
         containerView.addSubview(passwordTextField)
         passwordTextField.translatesAutoresizingMaskIntoConstraints = false
         NSLayoutConstraint.activate(
-            [passwordTextField.topAnchor.constraint(equalTo: emailTextField.bottomAnchor, constant: 8),
+            [passwordTextField.topAnchor.constraint(equalTo: emailTextField.bottomAnchor, constant: 16),
              passwordTextField.centerXAnchor.constraint(equalTo: containerView.centerXAnchor),
              passwordTextField.widthAnchor.constraint(equalTo: emailTextField.widthAnchor),
              passwordTextField.heightAnchor.constraint(equalTo: emailTextField.heightAnchor)])
@@ -183,4 +228,11 @@ class LoginVC: UIViewController {
 
   
 
+}
+
+extension LoginVC: UITextFieldDelegate {
+    func textFieldShouldReturn(_ textField: UITextField) -> Bool {
+        textField.resignFirstResponder()
+        return true
+    }
 }

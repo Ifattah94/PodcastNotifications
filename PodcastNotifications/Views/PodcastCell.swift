@@ -52,7 +52,7 @@ class PodcastCell: UITableViewCell {
         podcastImage.translatesAutoresizingMaskIntoConstraints =  false
         NSLayoutConstraint.activate(
             [podcastImage.heightAnchor.constraint(equalTo: self.heightAnchor),
-             podcastImage.widthAnchor.constraint(equalTo: podcastImage.widthAnchor),
+             podcastImage.widthAnchor.constraint(equalTo: podcastImage.heightAnchor),
              podcastImage.leadingAnchor.constraint(equalTo: self.leadingAnchor)])
         
        
